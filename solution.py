@@ -12,6 +12,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PADDLE_WIDTH, PADDLE_HEIGHT = 20, 100
 BALL_RADIUS = 7
+SCORE_FONT = pygame.font.SysFont("comicsans", 55)
 
 class Paddle:
     COLOR = WHITE
@@ -31,6 +32,9 @@ class Paddle:
             self.y -= self.VEL
         else:
             self.y += self.VEL
+    
+    def reset(self):
+        self.y = HEIGHT//2 - self.height//2
 
 class Ball:
     COLOR = WHITE
@@ -49,9 +53,19 @@ class Ball:
     def move(self):
         self.x += self.x_vel
         self.y += self.y_vel
+    
+    def reset(self):
+        self.x = WIDTH//2
+        self.y = HEIGHT//2
+        self.x_vel *= -1
+        self.y_vel = 0
 
-def draw(win, paddles, ball):
+def draw(win, paddles, ball, left_score, right_score):
     win.fill(BLACK)
+    left_score_text = SCORE_FONT.render(str(left_score), 1, WHITE)
+    right_score_text = SCORE_FONT.render(str(right_score), 1, WHITE)
+    win.blit(left_score_text, (WIDTH//4 - left_score_text.get_width()//2, 10))
+    win.blit(right_score_text, (WIDTH - WIDTH//4 - right_score_text.get_width()//2, 10))
     for paddle in paddles:
         paddle.draw(win)
     for i in range(10, HEIGHT, HEIGHT//20):
@@ -91,11 +105,17 @@ def main():
     clock = pygame.time.Clock()
 
     left_paddle = Paddle(10, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
     right_paddle = Paddle(WIDTH - PADDLE_WIDTH - 10, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
     ball = Ball(WIDTH//2, HEIGHT//2, BALL_RADIUS)
+
+    left_score = 0
+    right_score = 0
+
     while run:
         clock.tick(FPS)
-        draw(WIN, [left_paddle, right_paddle], ball) 
+        draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score) 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -104,6 +124,18 @@ def main():
         handle_keys(keys, left_paddle, right_paddle)
         ball.move()
         handle_collisions(ball, left_paddle, right_paddle)
+
+        if ball.x - ball.radius <= 0:
+            right_score += 1
+            ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
+        elif ball.x + ball.radius >= WIDTH:
+            left_score += 1
+            ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
+
     
     pygame.quit()
 
