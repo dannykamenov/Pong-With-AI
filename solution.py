@@ -19,6 +19,7 @@ WINNER = 10
 WIN_FONT = pygame.font.SysFont("comicsans", 75)
 
 class Paddle:
+    
     COLOR = WHITE
     VEL = 4
 
